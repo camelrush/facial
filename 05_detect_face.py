@@ -40,7 +40,7 @@ for photo in photos:
     # need to do a bit of reordering
     # boxes = [(y, x + w, y + h, x) for (x, y, w, h) in rects]
 
-    boxes = face_recognition.face_locations(rgb, model="hog")
+    boxes = face_recognition.face_locations(rgb, model="cnn")
 
     # compute the facial embeddings for each face bounding box
     encodings = face_recognition.face_encodings(rgb, boxes)
@@ -93,6 +93,6 @@ for photo in photos:
 
     # display the image to our screen
     os.makedirs('./photo_detected', exist_ok=True)
-    cv2.imwrite(f'./photo_detected/{photo.split("/")[2]}', frame)
+    cv2.imwrite(f'./photo_detected/{os.path.basename(photo)}', frame)
 
-    print("detect completed for " + photo.split("/")[2])
+    print("detect completed for " + os.path.basename(photo))
