@@ -5,6 +5,7 @@ import face_recognition
 import pickle
 import glob
 import cv2
+import os
 
 # Initialize 'currentname' to trigger only when a new person is identified.
 currentname = "unknown"
@@ -94,6 +95,7 @@ for photo in photos:
                     .8, (0, 255, 255), 2)
 
     # display the image to our screen
+    os.makedirs('./photo_detected', exist_ok=True)
     cv2.imwrite(f'./photo_detected/{photo.split("/")[2]}', frame)
 
     print("detect completed for " + photo.split("/")[2])
