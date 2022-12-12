@@ -2,17 +2,6 @@ import cv2
 import glob
 
 
-def save_rotate(frame, photo, angle):
-    (h, w) = frame.shape[:2]
-    center = (w / 2, h / 2)
-    scale = 1
-
-    M = cv2.getRotationMatrix2D(center, angle, scale)
-    frame_rotate = cv2.warpAffine(frame, M, (w, h))
-    filename = photo.replace(".jpg", "_rotate_" + str(angle) + ".jpg")   
-    cv2.imwrite(filename, frame_rotate)
-
-
 # use this xml file
 photos = glob.glob("./model_dataset/*/*.jpg")
 
@@ -22,9 +11,15 @@ for photo in photos:
 
     print("rotate for ..." + photo)
 
-    save_rotate(frame, photo, 30)
-    save_rotate(frame, photo, 300)
+    for angle in [30, -30]:
+        (h, w) = frame.shape[:2]
+        center = (w / 2, h / 2)
+        scale = 1
 
+        M = cv2.getRotationMatrix2D(center, angle, scale)
+        frame_rotate = cv2.warpAffine(frame, M, (w, h))
+        filename = photo.replace(".jpg", "_rotate_" + str(angle) + ".jpg")   
+        cv2.imwrite(filename, frame_rotate)
 
 photos = glob.glob("./model_dataset/*/*.jpg")
 
