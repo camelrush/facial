@@ -1,6 +1,3 @@
-#! /usr/bin/python
-
-# import the necessary packages
 import face_recognition
 import pickle
 import glob
@@ -37,13 +34,13 @@ for photo in photos:
     # rects = detector.detectMultiScale(gray, scaleFactor=1.1,
     #                                  minNeighbors=3, minSize=(70, 70),
     #                                  flags=cv2.CASCADE_SCALE_IMAGE)
- 
+
     # OpenCV returns bounding box coordinates in (x, y, w, h) order
     # but we need them in (top, right, bottom, left) order, so we
     # need to do a bit of reordering
     # boxes = [(y, x + w, y + h, x) for (x, y, w, h) in rects]
 
-    boxes = face_recognition.face_locations(rgb, model="cnn")
+    boxes = face_recognition.face_locations(rgb, model="hog")
 
     # compute the facial embeddings for each face bounding box
     encodings = face_recognition.face_encodings(rgb, boxes)
