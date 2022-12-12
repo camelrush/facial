@@ -1,0 +1,6 @@
+photo/
+photo_detected/
+model_dataset/
+model_rawset/
+./encodings.pickle
+.DS_Store

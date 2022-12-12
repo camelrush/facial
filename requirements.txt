@@ -1,0 +1,5 @@
+python-opencv
+opencv-contrib-python
+imutils
+face_recognition
+dlib
