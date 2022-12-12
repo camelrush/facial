@@ -1,5 +1,6 @@
 python-opencv
 opencv-contrib-python
+selenium=4.1.0
 imutils
 face_recognition
 dlib

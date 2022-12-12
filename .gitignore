@@ -4,3 +4,4 @@ model_dataset/
 model_rawset/
 ./encodings.pickle
 .DS_Store
+chromedriver.exe
