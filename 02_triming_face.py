@@ -6,6 +6,8 @@ import os
 detector = dlib.get_frontal_face_detector()
 photos = glob.glob("./model_rawset/*/*.jpg")
 
+TRIM_SIZE = 300
+
 
 def save(img, name, bbox):
 
@@ -24,6 +26,12 @@ for photo in photos:
 
     # ファイルから画像を読み込む
     frame = cv2.imread(photo)
+
+    # サイズを縮小
+    h, w, _ = frame.shape
+    if max([h, w]) > TRIM_SIZE:
+        ratio = TRIM_SIZE / max([h, w])
+        frame = cv2.resize(frame, dsize=None, fx=ratio, fy=ratio)
 
     # 検出用画像を取得(グレー)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

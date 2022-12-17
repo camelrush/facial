@@ -1,6 +1,8 @@
-python-opencv
+opencv-python
 opencv-contrib-python
-selenium=4.1.0
+selenium==4.1.0
 imutils
 face_recognition
 dlib
+matplotlib
+pafy
