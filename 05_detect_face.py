@@ -4,38 +4,39 @@ import cv2
 import sys
 import os
 
-# Initialize 'currentname' to trigger only when a new person is identified.
 currentname = "unknown"
-# Determine faces from encodings.pickle file model created from train_model.py
 encodingsP = "encodings.pickle"
-# use this xml file
 cascade = "haarcascade_frontalface_default.xml"
 
-# load the known faces and embeddings along with OpenCV's Haar
-# cascade for face detection
 data = pickle.loads(open(encodingsP, "rb").read())
 detector = cv2.CascadeClassifier(cascade)
 
 
 def detect_camera_face():
 
+    # カメラを起動
     cap = cv2.VideoCapture(0)
 
+    # 比較精度の初期値を設定
     tolerance = 0.4
 
+    # カメラから1フレームずつ処理
     while cap.isOpened():
+
+        # 1フレーム読み込み
         ret, frame = cap.read()
 
+        # フレーム全体をグレースケール化
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        # detect faces in the grayscale frame
+        # カスケード分類器で顔を検出
         rects = detector.detectMultiScale(gray, scaleFactor=1.3,
                                           minNeighbors=3, minSize=(150, 150),
                                           flags=cv2.CASCADE_SCALE_IMAGE)
         boxes = [(y, x + w, y + h, x) for (x, y, w, h) in rects]
 
-        # show tolerance
+        # 測定精度をフレームに表示
         cv2.putText(frame,
                     text=f'tolerance : {str(tolerance)}',
                     org=(1, 30),
@@ -44,29 +45,27 @@ def detect_camera_face():
                     color=(0, 255, 0),
                     thickness=2)
 
+        # 同時に検出された顔画像分、繰り返す
         for box in boxes:
 
             encodings = face_recognition.face_encodings(rgb, [box])
 
             for encoding in encodings:
+
+                # 顔画像と集積画像を照合。近似値から比較結果(T/F)を得る
                 matches = face_recognition.compare_faces(data["encodings"],
                                                          encoding, tolerance)
+
+                # 集積画像の中にひとつでも類似画像があれば検出とする
                 if True in matches:
-                    # find the indexes of all matched faces then initialize a
-                    # dictionary to count the total number of times each face
-                    # was matched
+                    
                     matchedIdxs = [i for (i, b) in enumerate(matches) if b]
                     counts = {}
 
-                    # loop over the matched indexes and maintain a count for
-                    # each recognized face face
                     for i in matchedIdxs:
                         name = data["names"][i]
                         counts[name] = counts.get(name, 0) + 1
 
-                    # determine the recognized face with the largest number
-                    # of votes (note: in the event of an unlikely tie Python
-                    # will select first entry in the dictionary)
                     name = max(counts, key=counts.get)
                     color = (0, 0, 255)
 
@@ -74,8 +73,7 @@ def detect_camera_face():
                     name = "unknown"
                     color = (255, 255, 225)
 
-                # draw the predicted face name on the image
-                #  - color is in BGR
+                # 顔画像上に、検出された名前と四角枠を表示
                 [top, right, bottom, left] = box
                 cv2.rectangle(frame, (left, top), (right, bottom),
                               color, 2)
@@ -84,94 +82,90 @@ def detect_camera_face():
                             cv2.FONT_HERSHEY_SIMPLEX,
                             .8, color, 2)
 
+                if name != "unknown":
+                    break
+
+        # 加工した1フレームを画面に表示
         cv2.imshow("realtime face detect window", frame)
 
+        # キー入力を検知
         k = cv2.waitKey(1)
-        # press 'q'. quit
+
+        # 'q'キー押下で終了
         if k & 0xFF == ord('q'):
             break
-        # press '+'. tolerance up.
+        # '+'キー押下でtoleranceを加算
         elif k & 0xFF == ord('+'):
             tolerance = round(tolerance + 0.1, 1)
-        # press '-'. tolerance down.
+        # '-'キー押下でtoleranceを減算
         elif k & 0xFF == ord('-'):
             tolerance = round(tolerance - 0.1, 1)
 
+    # カメラリソース開放
     cap.release()
     cv2.destroyAllWindows()
 
 
 def detect_imagefile_face(image_file):
 
-    # check image file exist.
+    # 画像ファイルの存在チェック
     if os.path.exists(image_file) is False:
         print('invalid arguments.')
         print(f'image file {image_file} is not exists.')
         return
 
-    # grab the frame from the threaded video stream and resize it
-    # to 500px (to speedup processing)
+    # ファイルから画像を読み込み、RGB、グレースケールに変換
     frame = cv2.imread(image_file)
-
-    # convert the input frame from (1) BGR to grayscale (for face
-    # detection) and (2) from BGR to RGB (for face recognition)
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    # detect faces in the grayscale frame
+    # RGB画像から顔を検出し、顔の座標を得る(CNNを使用)
     boxes = face_recognition.face_locations(gray, model="cnn")
 
-    # compute the facial embeddings for each face bounding box
+    # 顔座標の矩形画像（つまり顔写真）を、数値リストに変換
     encodings = face_recognition.face_encodings(rgb, boxes)
-    names = []
 
-    # loop over the facial embeddings
+    # 検出した顔それぞれを、集積画像と照合
+    names = []
     for encoding in encodings:
-        # attempt to match each face in the input image to our known
-        # encodings
+
+        # 顔画像と集積画像を照合。近似値から比較結果(T/F)を得る
         matches = face_recognition.compare_faces(data["encodings"],
                                                  encoding, 0.4)
-        name = "Unknown"  # if face is not recognized, then print Unknown
+        name = "Unknown"
 
-        # check to see if we have found a match
+        # 集積画像の中にひとつでも類似画像があれば検出とする
         if True in matches:
-            # find the indexes of all matched faces then initialize a
-            # dictionary to count the total number of times each face
-            # was matched
+
             matchedIdxs = [i for (i, b) in enumerate(matches) if b]
             counts = {}
 
-            # loop over the matched indexes and maintain a count for
-            # each recognized face face
             for i in matchedIdxs:
                 name = data["names"][i]
                 counts[name] = counts.get(name, 0) + 1
 
-            # determine the recognized face with the largest number
-            # of votes (note: in the event of an unlikely tie Python
-            # will select first entry in the dictionary)
             name = max(counts, key=counts.get)
 
-        # update the list of names
+        # 名前を検出結果リストに追加
         names.append(name)
 
-    # loop over the recognized faces
+    # 検出画像分繰り返す
     for ((top, right, bottom, left), name) in zip(boxes, names):
-        # draw the predicted face name on the image - color is in BGR
+        # 顔画像上に、検出された名前と四角枠を表示
         cv2.rectangle(frame, (left, top), (right, bottom),
                       (0, 255, 225), 2)
         y = top - 15 if top - 15 > 15 else top + 15
         cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
                     .8, (0, 255, 255), 2)
 
-    # save image ([image_file]_detected.jpg)
+    # 加工した画像を保存
     dname = \
         os.path.dirname(image_file) + '/' + \
         os.path.splitext(image_file)[0] + '_detected.' + \
         os.path.splitext(image_file)[1]
     cv2.imwrite(dname, frame)
 
-    # display the image to our screen
+    # 画像を画面に表示する
     print("show detected window...(see backend)")
     print("for exit, press any key on window.")
     cv2.imshow("detected image window", frame)
@@ -181,12 +175,16 @@ def detect_imagefile_face(image_file):
 
 
 if __name__ == "__main__":
+    
+    # カメラ検出モード
     if len(sys.argv) == 1:
-        # mode : camera detection
         detect_camera_face()
+
+    # イメージ画像検出モード
     elif len(sys.argv) == 2:
-        # mode : image file detection
         detect_imagefile_face(sys.argv[1])
+
+    # 引数エラー
     else:
         msg = ""
         msg += "invalid arguments. how to use.\n"

@@ -2,9 +2,8 @@ import cv2
 import glob
 
 
-# use this xml file
+# 1.-30°、30°に傾けた画像を作成
 photos = glob.glob("./model_dataset/*/*.jpg")
-
 for photo in photos:
 
     frame = cv2.imread(photo)
@@ -21,8 +20,9 @@ for photo in photos:
         filename = photo.replace(".jpg", "_rotate_" + str(angle) + ".jpg")   
         cv2.imwrite(filename, frame_rotate)
 
-photos = glob.glob("./model_dataset/*/*.jpg")
 
+# 2.グレースケールに変色させた画像を作成
+photos = glob.glob("./model_dataset/*/*.jpg")
 for photo in photos:
 
     frame = cv2.imread(photo)
@@ -34,8 +34,8 @@ for photo in photos:
     cv2.imwrite(filename, frame_gray)
 
 
+# 3.水平方向に反転させた画像を作成
 photos = glob.glob("./model_dataset/*/*.jpg")
-
 for photo in photos:
 
     frame = cv2.imread(photo)

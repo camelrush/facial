@@ -6,7 +6,8 @@ import os
 detector = dlib.get_frontal_face_detector()
 photos = glob.glob("./model_rawset/*/*.jpg")
 
-TRIM_SIZE = 300
+# 最大縦横サイズ
+MAX_TRIM_SIZE = 300
 
 
 def save(img, name, bbox):
@@ -27,10 +28,10 @@ for photo in photos:
     # ファイルから画像を読み込む
     frame = cv2.imread(photo)
 
-    # サイズを縮小
+    # サイズが大きすぎる場合は、最大サイズまで縮小する
     h, w, _ = frame.shape
-    if max([h, w]) > TRIM_SIZE:
-        ratio = TRIM_SIZE / max([h, w])
+    if max([h, w]) > MAX_TRIM_SIZE:
+        ratio = MAX_TRIM_SIZE / max([h, w])
         frame = cv2.resize(frame, dsize=None, fx=ratio, fy=ratio)
 
     # 検出用画像を取得(グレー)
@@ -42,14 +43,15 @@ for photo in photos:
     # 顔部分を検出(dlib)
     faces = detector(gray)
 
-    # 2人以上がノイズの画像になるため、1人の画像だけを保存する()
+    # 1人の画像以外は除く
     if len(faces) != 1:
         continue
 
-    for counter, face in enumerate(faces):
-        x1, y1 = face.left(), face.top()
-        x2, y2 = face.right(), face.bottom()
+    # 検出された顔の範囲を画像として保存する
+    face = faces[0]
+    x1, y1 = face.left(), face.top()
+    x2, y2 = face.right(), face.bottom()
 
-        save_path = photo.replace('model_rawset', 'model_dataset')
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        save(frame, save_path, (x1, y1, x2, y2))
+    save_path = photo.replace('model_rawset', 'model_dataset')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    save(frame, save_path, (x1, y1, x2, y2))
