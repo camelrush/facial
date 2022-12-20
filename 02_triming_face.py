@@ -7,7 +7,7 @@ detector = dlib.get_frontal_face_detector()
 photos = glob.glob("./model_rawset/*/*.jpg")
 
 # 最大縦横サイズ
-MAX_TRIM_SIZE = 300
+MAX_TRIM_SIZE = 500
 
 
 def save(img, name, bbox):

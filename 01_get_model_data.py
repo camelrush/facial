@@ -17,16 +17,19 @@ ACCESS_WAIT = 1                             # アクセスする間隔（秒）
 RETRY_NUM = 3                               # リトライ回数（クリック、requests）
 DRIVER_PATH = '/usr/bin/chromedriver'       # chromedriver.exeへのパス
 
+# 検索ワード入力
 print('input query keyword:', end='')
 query_word = input()
 if query_word == "":
     query_word = "ハリソンフォード"
 
+# 名前ラベル入力
 print('input label:', end='')
 query_label = input()
 if query_label == "":
     query_label = "harison"
 
+# 収集枚数入力
 print('input number of get_model:', end='')
 limit_dl_num_str = input()
 if limit_dl_num_str == "":
